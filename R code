@@ -1,0 +1,76 @@
+#set filepath
+setwd("M:/Datasets")
+#set up text file
+od <- read.table("oreodonts.txt", header = TRUE)
+names(od) <- c("BrainCase", "CheekTooth", "BullaLength" , "BullaDepth", "species")
+#This file looks at prehistoric mammals known as oreodonts.There are 7 species.
+#The four columns labelled x1, x2, x3 and x4 give skull measurements made on the fossils: braincase width, cheek tooth length, and the length and depth of the bulla (a bony case in the ear).
+od[1:5, ]   # Look at the first few rows.
+od$species <- factor(od$species)
+od$species
+#graphing data
+colours <- c("black", "red", "goldenrod4", "green", "magenta3",  "blue", "orange")
+
+pairs(od[, 1:4], 
+      col = colours[od$species], 
+      pch = 16, 
+      oma=c(3, 3, 3, 11))
+
+legend("topright", 
+       legend = 1:7, 
+       col = colours, 
+       pch = 16,
+       xpd = TRUE,
+       title = "Species:")
+
+# We take the four columns of measurements
+# as our X data:
+
+X <- od[ , 1:4]
+
+# Apply the mean() function to the columns of 
+# X, but with observations grouped by species:
+
+means <- aggregate(x = X, 
+                   by = list(od$species), 
+                   FUN = mean)
+means #these are our X bar i,.
+
+SDs <- aggregate(x = X, by = list(od[, 5]), FUN = sd)
+
+SDs
+
+# Tables of rounded means and SDs
+meantable <- round(as.matrix(means[, 2:5]))
+SDtable   <- round(as.matrix(SDs[, 2:5]))
+
+# Combine them (with SDs in parentheses):
+meantable[] <- paste(meantable, "(", SDtable, ")", sep = "")
+
+# noquote() just prints the output without quotation marks:
+noquote(meantable)   
+
+m <- manova(cbind(BrainCase, CheekTooth, BullaLength, BullaDepth) ~ species, data = od)
+
+summary(m)
+#This p value suggests we reject the null at an extremely small % less than 0.5% 
+#We reject the null that there is no difference in means between the groups 
+
+#usually I use Wilks' Lambda statistics but there are others
+summary(m, test = "Roy")
+summary(m, test = "Hotelling")
+summary(m, test = "Pillai")
+
+#we can look at data from bulls (breed,sp-spelling price, h2-yearling height at shoulder,ffb-fat free body weight
+#pff-percentage fat-free body  weight, f-frame small to big, bf-back fat,hs-height at shoulder, ws-sale weight)
+#measured in dollars,inches and pounds (weight)
+#there are 3 different types of breed and we can perform a manova of these types
+bl <- read.table("bulls.txt", header = TRUE)
+bl[1:5, ]   # View the first 5 rows.
+bl$breed <- factor(bl$breed)
+bl$breed
+X<-as.matrix(bl[ ,2:9])
+s<-bl[ ,1]
+m<-manova(X~s)
+summary(m)
+#there is a difference in group mean at the 0.1%
